@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Metrics – January 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+:root{--bg:#f0f2f5;--card:#fff;--hdr:#0d1b2a;--hdr2:#1b2e44;--text:#1a202c;--muted:#6b7280;--ondark:#fff;--blue:#3b82f6;--green:#10b981;--amber:#f59e0b;--purple:#8b5cf6;--gap:16px;--r:10px;--shadow:0 1px 4px rgba(0,0,0,.08),0 2px 12px rgba(0,0,0,.04)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.wrap{max-width:1400px;margin:0 auto;padding:var(--gap)}
+.hdr{background:linear-gradient(135deg,var(--hdr) 0%,var(--hdr2) 100%);color:var(--ondark);padding:20px 28px;border-radius:var(--r);margin-bottom:var(--gap);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.hdr-l{display:flex;flex-direction:column;gap:4px}
+.hdr-logo{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.5);font-weight:600}
+.hdr h1{font-size:20px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,.55)}
+.hdr-r{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.back-btn{padding:8px 16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:6px;color:#fff;font-size:13px;text-decoration:none;display:flex;align-items:center;gap:6px}
+.back-btn:hover{background:rgba(255,255,255,.25)}
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fg{display:flex;align-items:center;gap:6px}
+.fg label{font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.fg select{padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer;min-width:120px}
+.fg select option{background:#1b2e44}
+.rbtn{padding:6px 12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:6px;color:#fff;font-size:12px;cursor:pointer}
+.rbtn:hover{background:rgba(255,255,255,.25)}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--gap);margin-bottom:var(--gap)}
+.kpi{background:var(--card);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow);border-left:4px solid transparent;transition:transform .2s}
+.kpi:hover{transform:translateY(-2px)}
+.kpi:nth-child(1){border-color:var(--blue)}.kpi:nth-child(2){border-color:var(--green)}.kpi:nth-child(3){border-color:var(--amber)}.kpi:nth-child(4){border-color:var(--purple)}
+.kpi-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:600;margin-bottom:6px}
+.kpi-val{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-bottom:var(--gap)}
+.row3{display:grid;grid-template-columns:2fr 1fr;gap:var(--gap);margin-bottom:var(--gap)}
+.cbox{background:var(--card);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow)}
+.cbox-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.cbox-title{font-size:13px;font-weight:700}
+.bdg{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:3px 8px;border-radius:20px;background:#eff6ff;color:var(--blue)}
+.cbox canvas{max-height:280px}.cbox.tall canvas{max-height:360px}
+.tbl-section{background:var(--card);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow);margin-bottom:var(--gap)}
+.tbl-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.tbl-title{font-size:13px;font-weight:700}.tbl-count{font-size:12px;color:var(--muted)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{text-align:left;padding:9px 12px;border-bottom:2px solid #e5e7eb;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--text);background:#f9fafb}
+tbody td{padding:9px 12px;border-bottom:1px solid #f3f4f6;color:var(--text)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f9fafb}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.ths{background:#dbeafe;color:#1d4ed8}.tins{background:#fef3c7;color:#b45309}.tb2b{background:#d1fae5;color:#065f46}.toth{background:#f3f4f6;color:#374151}
+.tmod{background:#eff6ff;color:#2563eb}.texp{background:#f0fdf4;color:#16a34a}.tmisc{background:#fafafa;color:#6b7280}.tbug{background:#fee2e2;color:#dc2626}.tlnch{background:#ede9fe;color:#7c3aed}.tgen{background:#fff7ed;color:#c2410c}
+.tlink{color:var(--blue);text-decoration:none;font-weight:500}.tlink:hover{text-decoration:underline}
+.pg{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:12px;color:var(--muted)}
+.pg-btns{display:flex;gap:6px}
+.pb{padding:5px 10px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;color:var(--text);cursor:pointer;font-size:12px}
+.pb:hover{background:#f3f4f6}.pb.on{background:var(--blue);color:#fff;border-color:var(--blue)}.pb:disabled{opacity:.4;cursor:not-allowed}
+footer{text-align:center;font-size:11px;color:var(--muted);padding:12px 0 4px}
+@media(max-width:900px){.row2,.row3{grid-template-columns:1fr}}
+@media(max-width:600px){.kpi-row{grid-template-columns:repeat(2,1fr)}.hdr{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hdr">
+  <div class="hdr-l">
+    <span class="hdr-logo">Centerfield · QA Team</span>
+    <h1>QA Metrics — January 2026 <span style="font-size:11px;background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;color:rgba(255,255,255,.6);">Baseline month</span></h1>
+    <span class="hdr-sub">Ticket analysis across all segments &amp; resources</span>
+  </div>
+  <div class="hdr-r">
+    <a class="back-btn" href="QA_Monthly_Summary.html">&#8592; Back to Summary</a>
+    <div class="filters">
+      <div class="fg"><label>Segment</label><select id="fSeg" onchange="D.go()"><option value="">All Segments</option></select></div>
+      <div class="fg"><label>Resource</label><select id="fRes" onchange="D.go()"><option value="">All Resources</option></select></div>
+      <div class="fg"><label>Type</label><select id="fTyp" onchange="D.go()"><option value="">All Types</option></select></div>
+      <button class="rbtn" onclick="D.reset()">&#8634; Reset</button>
+    </div>
+  </div>
+</header>
+<section class="kpi-row">
+  <div class="kpi"><div class="kpi-lbl">Total Tickets</div><div class="kpi-val" id="kT">—</div><div class="kpi-sub" id="kTsub"></div></div>
+  <div class="kpi"><div class="kpi-lbl">Unique Domains</div><div class="kpi-val" id="kD">—</div><div class="kpi-sub">Domains in view</div></div>
+  <div class="kpi"><div class="kpi-lbl">Active Resources</div><div class="kpi-val" id="kR">—</div><div class="kpi-sub">Team members</div></div>
+  <div class="kpi"><div class="kpi-lbl">Segments Covered</div><div class="kpi-val" id="kS">—</div><div class="kpi-sub">Business segments</div></div>
+</section>
+<div class="row2">
+  <div class="cbox"><div class="cbox-hdr"><span class="cbox-title">Segment Breakdown</span><span class="bdg">Segments</span></div><canvas id="cSeg"></canvas></div>
+  <div class="cbox"><div class="cbox-hdr"><span class="cbox-title">Resource Breakdown</span><span class="bdg">Team</span></div><canvas id="cRes"></canvas></div>
+</div>
+<div class="row3">
+  <div class="cbox tall"><div class="cbox-hdr"><span class="cbox-title">Top 10 Domains by Ticket Volume</span><span class="bdg">Domains</span></div><canvas id="cDom"></canvas></div>
+  <div class="cbox tall"><div class="cbox-hdr"><span class="cbox-title">Ticket Type Distribution</span><span class="bdg">Types</span></div><canvas id="cTyp"></canvas></div>
+</div>
+<div class="tbl-section">
+  <div class="tbl-hdr"><span class="tbl-title">All Tickets</span><span class="tbl-count" id="tCount"></span></div>
+  <div class="tbl-wrap"><div id="tBody"></div></div>
+  <div class="pg"><span id="pgInfo"></span><div class="pg-btns" id="pgBtns"></div></div>
+</div>
+<footer>Source: QA Metrics 2026.xlsx &nbsp;·&nbsp; January 2026 &nbsp;·&nbsp; Centerfield QA Team</footer>
+</div>
+<script>
+const PALETTE = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#6366f1'];
+const RAW = [{"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/B2B-739", "Segment": "B2B", "Domain": "AT&T SMB P3", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3681", "Segment": "Home Services", "Domain": "Vivint P2", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-1563", "Segment": "Home Services", "Domain": "Vivint P2", "Ticket_Type": "EXP"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3669", "Segment": "Home Services", "Domain": "Vivint P2", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3698", "Segment": "Home Services", "Domain": "Vivint P3", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3428", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3787", "Segment": "Home Services", "Domain": "Vivint P2", "Ticket_Type": "PROD BUG"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-2748", "Segment": "Home Services", "Domain": "Viasat P1", "Ticket_Type": "EXP"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3881", "Segment": "Home Services", "Domain": "ADT Security", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3827", "Segment": "Home Services", "Domain": "ADT Security", "Ticket_Type": "DEV"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3598", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3832", "Segment": "Home Services", "Domain": "Vivint P2", "Ticket_Type": "DEV"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-2501", "Segment": "Home Services", "Domain": "Quantum Fiber", "Ticket_Type": "EXP"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-2805", "Segment": "Home Services", "Domain": "DTV Online", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3892", "Segment": "Home Services", "Domain": "DTV Online", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/ECOM-160", "Segment": "ECOM", "Domain": "Senior List", "Ticket_Type": "FINGERPRINT"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-463", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "EXP"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-506", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "BUG"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/ECOM-160", "Segment": "ECOM", "Domain": "Senior List", "Ticket_Type": "FINGERPRINT"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/ECOM-160", "Segment": "ECOM", "Domain": "Senior List", "Ticket_Type": "FINGERPRINT"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3904", "Segment": "Home Services", "Domain": "Verizon NB", "Ticket_Type": "MOD"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-406", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "NF"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3946", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3491", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3599", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3947", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3816", "Segment": "Home Services", "Domain": "Optimum P2", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3608", "Segment": "Home Services", "Domain": "Optimum P3", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3773", "Segment": "Home Services", "Domain": "Optimum P1", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/B2B-224", "Segment": "B2B", "Domain": "Optimum SMB P2", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4023", "Segment": "Home Services", "Domain": "Frontier", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4009", "Segment": "Home Services", "Domain": "Consumer Cellular", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3919", "Segment": "Home Services", "Domain": "Viasat P1", "Ticket_Type": "MOD to EXP"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3587", "Segment": "Home Services", "Domain": "Viasat P1", "Ticket_Type": "EXP"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4005", "Segment": "Home Services", "Domain": "Viasat P1", "Ticket_Type": "MOD to EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3549", "Segment": "Home Services", "Domain": "Vivint P3", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3864", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "LAUNCH"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3743", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3671", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "EXP"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/B2B-933", "Segment": "B2B", "Domain": "Worldpay", "Ticket_Type": "PROD BUG"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3563", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4077", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3545", "Segment": "Home Services", "Domain": "Century Link P1", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3631", "Segment": "Home Services", "Domain": "Century Link P1", "Ticket_Type": "PROD BUG"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3731", "Segment": "Home Services", "Domain": "Century Link P1", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3733", "Segment": "Home Services", "Domain": "Century Link P1", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4078", "Segment": "Home Services", "Domain": "Optimum P2", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4123", "Segment": "Home Services", "Domain": "Optimum P2", "Ticket_Type": "MOD"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/TCFPB-95", "Segment": "Insurance", "Domain": "Coverage.net", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4076", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4158", "Segment": "Home Services", "Domain": "COX P2", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4165", "Segment": "Home Services", "Domain": "COX P3", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4134", "Segment": "Home Services", "Domain": "Consumer Cellular", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3959", "Segment": "Home Services", "Domain": "Brightspeed P2", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3235", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4150", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4154", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3938", "Segment": "Home Services", "Domain": "Brightspeed P1", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3755", "Segment": "Home Services", "Domain": "Century Link P2", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3621", "Segment": "Home Services", "Domain": "Century Link P2", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3820", "Segment": "Home Services", "Domain": "Century Link P2", "Ticket_Type": "MOD to EXP"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3971", "Segment": "Home Services", "Domain": "Brightspeed P3", "Ticket_Type": "MOD"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-503", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "BUG"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-543", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "MOD"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-521", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3070", "Segment": "Home Services", "Domain": "Optimum P1", "Ticket_Type": "EXP"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4225", "Segment": "Home Services", "Domain": "Brightspeed P3", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4302", "Segment": "Home Services", "Domain": "Brightspeed P3", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4224", "Segment": "Home Services", "Domain": "Brightspeed P1", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4226", "Segment": "Home Services", "Domain": "Brightspeed P2", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/B2B-983", "Segment": "B2B", "Domain": "Merchant One", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4321", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4253", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "MOD to EXP"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3684", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3738", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-1572", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "EXP"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3164", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "EXP"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3924", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "EXP"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4291", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4136", "Segment": "Home Services", "Domain": "Viasat P1", "Ticket_Type": "EXP"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4377", "Segment": "Home Services", "Domain": "Viasat P1", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4083", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "LAUNCH"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4326", "Segment": "Home Services", "Domain": "ISC", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3886", "Segment": "Home Services", "Domain": "DTV Online", "Ticket_Type": "MOD"}, {"Resource": "IPE", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4327", "Segment": "Home Services", "Domain": "IPE", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3727", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "LAUNCH"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4211", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4269", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4084", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "LAUNCH"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/B2B-533", "Segment": "B2B", "Domain": "AT&T SMB P1", "Ticket_Type": "LAUNCH"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4045", "Segment": "Home Services", "Domain": "HSS", "Ticket_Type": "EXP"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4254", "Segment": "Home Services", "Domain": "Frontier", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4550", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "HOTFIX"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3986", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4472", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "EXP"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4367", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "EXP"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4370", "Segment": "Home Services", "Domain": "Brightspeed P1", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4547", "Segment": "Home Services", "Domain": "Brightspeed P2", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4499", "Segment": "Home Services", "Domain": "Brightspeed P3", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4268", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4374", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4372", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "MOD"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4548", "Segment": "Home Services", "Domain": "Frontier P2", "Ticket_Type": "MOD"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-602", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "LAUNCH"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-612", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "MOD"}, {"Resource": "Elaine", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/INSU-572", "Segment": "Insurance", "Domain": "AIC", "Ticket_Type": "EXP"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-2505", "Segment": "Home Services", "Domain": "Quantum Fiber", "Ticket_Type": "EXP"}, {"Resource": "Monica", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4665", "Segment": "Home Services", "Domain": "T-Mobile", "Ticket_Type": "MOD"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-2305", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "EXP"}, {"Resource": "Liz", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-3496", "Segment": "Home Services", "Domain": "ADT P1", "Ticket_Type": "EXP"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4230", "Segment": "Home Services", "Domain": "Optimum P3", "Ticket_Type": "HOTFIX"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4684", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "EXP"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4558", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4557", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "EXP"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4509", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4679", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "EXP"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4676", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "EXP"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4681", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "EXP"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4507", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "MOD"}, {"Resource": "Roman", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4640", "Segment": "Home Services", "Domain": "AT&T P1", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/B2B-1053", "Segment": "B2B", "Domain": "Clover P1", "Ticket_Type": "MOD"}, {"Resource": "Marco", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-4709", "Segment": "Home Services", "Domain": "AT&T P2", "Ticket_Type": "MOD"}, {"Resource": "Andy", "Ticket_URL": "https://centerfieldmedia.atlassian.net/browse/HOME-2268", "Segment": "Home Services", "Domain": "Spectrum P2", "Ticket_Type": "EXP"}];
+
+function tally(arr, key) {
+  return arr.reduce(function(acc, r) { acc[r[key]] = (acc[r[key]] || 0) + 1; return acc; }, {});
+}
+function topN(obj, n) {
+  return Object.entries(obj).sort(function(a,b){ return b[1]-a[1]; }).slice(0, n);
+}
+function segCls(s) {
+  if (s === 'Home Services') return 'ths';
+  if (s === 'Insurance') return 'tins';
+  if (s === 'B2B') return 'tb2b';
+  return 'toth';
+}
+function typCls(t) {
+  var x = (t || '').toLowerCase().replace(/\s/g,'');
+  if (x === 'mod') return 'tmod';
+  if (x === 'exp') return 'texp';
+  if (x === 'misc') return 'tmisc';
+  if (x.indexOf('bug') !== -1) return 'tbug';
+  if (x === 'launch') return 'tlnch';
+  return 'tgen';
+}
+function tid(url) { return (url || '').split('/browse/').pop(); }
+
+var D = (function() {
+  var raw = RAW;
+  var filtered = raw.slice();
+  var charts = {};
+  var page = 0, ps = 25, sc = null, sd = 'asc';
+
+  function fillSel(id, key) {
+    var sel = document.getElementById(id);
+    var seen = {}, vals = [];
+    raw.forEach(function(r) { if (!seen[r[key]]) { seen[r[key]] = 1; vals.push(r[key]); } });
+    vals.sort().forEach(function(v) { var o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
+  }
+
+  function applyFilters() {
+    var sg = document.getElementById('fSeg').value;
+    var rs = document.getElementById('fRes').value;
+    var tp = document.getElementById('fTyp').value;
+    filtered = raw.filter(function(r) {
+      if (sg && r.Segment !== sg) return false;
+      if (rs && r.Resource !== rs) return false;
+      if (tp && r.Ticket_Type !== tp) return false;
+      return true;
+    });
+    page = 0;
+  }
+
+  function kpis() {
+    var n = filtered.length, all = raw.length;
+    document.getElementById('kT').textContent = n.toLocaleString();
+    document.getElementById('kTsub').textContent = n < all ? (Math.round(n/all*100) + '% of ' + all + ' total') : 'All ' + n + ' tickets';
+    var doms = {}, ress = {}, segs = {};
+    filtered.forEach(function(r) { doms[r.Domain] = 1; ress[r.Resource] = 1; segs[r.Segment] = 1; });
+    document.getElementById('kD').textContent = Object.keys(doms).length;
+    document.getElementById('kR').textContent = Object.keys(ress).length;
+    document.getElementById('kS').textContent = Object.keys(segs).length;
+  }
+
+  function mkDoughnut(id, labels, values) {
+    var ctx = document.getElementById(id).getContext('2d');
+    return new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: values, backgroundColor: ['#3b82f6cc','#10b981cc','#f59e0bcc','#8b5cf6cc','#06b6d4cc'], borderColor: '#fff', borderWidth: 3, hoverOffset: 8 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '62%',
+        plugins: {
+          legend: { position: 'right', labels: { usePointStyle: true, padding: 14, font: { size: 12 } } },
+          tooltip: { callbacks: { label: function(c) {
+            var t = c.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+            return ' ' + c.label + ': ' + c.parsed + ' (' + (c.parsed/t*100).toFixed(1) + '%)';
+          }}}
+        }
+      }
+    });
+  }
+
+  function mkBar(id, labels, values, opts) {
+    var cfg = opts || {};
+    var ctx = document.getElementById(id).getContext('2d');
+    return new Chart(ctx, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'Tickets', data: values,
+        backgroundColor: cfg.single ? (cfg.color || '#3b82f6bb') : PALETTE.slice(0, labels.length).map(function(c){ return c+'cc'; }),
+        borderColor:     cfg.single ? (cfg.bcolor || '#3b82f6')  : PALETTE.slice(0, labels.length),
+        borderWidth: 1.5, borderRadius: 4
+      }]},
+      options: {
+        indexAxis: cfg.horiz ? 'y' : 'x',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) {
+          var v = cfg.horiz ? c.parsed.x : c.parsed.y;
+          if (cfg.pct) {
+            var t = c.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+            return ' ' + v + ' (' + (v/t*100).toFixed(1) + '%)';
+          }
+          return ' ' + v + ' tickets';
+        }}}},
+        scales: {
+          x: { beginAtZero: !cfg.horiz, grid: { color: cfg.horiz ? '#f3f4f6' : 'transparent', display: cfg.horiz } },
+          y: { beginAtZero: !cfg.horiz, grid: { color: cfg.horiz ? 'transparent' : '#f3f4f6', display: !cfg.horiz } }
+        }
+      }
+    });
+  }
+
+  function seg() {
+    var counts = tally(filtered, 'Segment');
+    var entries = Object.entries(counts).sort(function(a,b){ return b[1]-a[1]; });
+    var L = entries.map(function(e){ return e[0]; }), V = entries.map(function(e){ return e[1]; });
+    if (charts.seg) { charts.seg.data.labels = L; charts.seg.data.datasets[0].data = V; charts.seg.update('none'); return; }
+    charts.seg = mkDoughnut('cSeg', L, V);
+  }
+
+  function res() {
+    var counts = tally(filtered, 'Resource');
+    var entries = Object.entries(counts).sort(function(a,b){ return b[1]-a[1]; });
+    var L = entries.map(function(e){ return e[0]; }), V = entries.map(function(e){ return e[1]; });
+    if (charts.res) { charts.res.data.labels = L; charts.res.data.datasets[0].data = V; charts.res.update('none'); return; }
+    charts.res = mkBar('cRes', L, V, {});
+  }
+
+  function dom() {
+    var top = topN(tally(filtered, 'Domain'), 10);
+    var L = top.map(function(e){ return e[0]; }), V = top.map(function(e){ return e[1]; });
+    if (charts.dom) { charts.dom.data.labels = L; charts.dom.data.datasets[0].data = V; charts.dom.update('none'); return; }
+    charts.dom = mkBar('cDom', L, V, { horiz: true, single: true });
+  }
+
+  function typ() {
+    var counts = tally(filtered, 'Ticket_Type');
+    var entries = Object.entries(counts).sort(function(a,b){ return b[1]-a[1]; });
+    var L = entries.map(function(e){ return e[0]; }), V = entries.map(function(e){ return e[1]; });
+    if (charts.typ) { charts.typ.data.labels = L; charts.typ.data.datasets[0].data = V; charts.typ.update('none'); return; }
+    charts.typ = mkBar('cTyp', L, V, { pct: true });
+  }
+
+  function tbl() {
+    var d = filtered;
+    document.getElementById('tCount').textContent = d.length + ' ticket' + (d.length !== 1 ? 's' : '');
+    var s = page * ps, e = Math.min(s + ps, d.length), pd = d.slice(s, e);
+    var cols = [
+      { l: 'Ticket ID', k: 'Ticket_URL', t: 'link' },
+      { l: 'Resource',  k: 'Resource' },
+      { l: 'Segment',   k: 'Segment',     t: 'seg' },
+      { l: 'Domain',    k: 'Domain' },
+      { l: 'Type',      k: 'Ticket_Type', t: 'typ' }
+    ];
+    var h = '<table><thead><tr>';
+    cols.forEach(function(c) {
+      var a = sc === c.k ? (sd === 'asc' ? ' ▲' : ' ▼') : ' ⇅';
+      h += '<th onclick="D.sort(\'' + c.k + '\')">' + c.l + '<span style="opacity:.4;font-size:9px">' + a + '</span></th>';
+    });
+    h += '</tr></thead><tbody>';
+    pd.forEach(function(r) {
+      h += '<tr>';
+      cols.forEach(function(c) {
+        if (c.t === 'link') {
+          h += '<td><a class="tlink" href="' + r[c.k] + '" target="_blank">' + tid(r[c.k]) + '</a></td>';
+        } else if (c.t === 'seg') {
+          h += '<td><span class="tag ' + segCls(r[c.k]) + '">' + r[c.k] + '</span></td>';
+        } else if (c.t === 'typ') {
+          h += '<td><span class="tag ' + typCls(r[c.k]) + '">' + r[c.k] + '</span></td>';
+        } else {
+          h += '<td>' + r[c.k] + '</td>';
+        }
+      });
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+    document.getElementById('tBody').innerHTML = h;
+
+    var tp = Math.ceil(d.length / ps);
+    document.getElementById('pgInfo').textContent = 'Showing ' + (s+1) + '\u2013' + e + ' of ' + d.length + ' tickets';
+    var p = '<button class="pb" onclick="D.goPage(' + (page-1) + ')" ' + (page === 0 ? 'disabled' : '') + '>&#8249; Prev</button>';
+    var sp2 = Math.max(0, page-2), ep2 = Math.min(tp-1, page+2);
+    for (var i = sp2; i <= ep2; i++) {
+      p += '<button class="pb ' + (i === page ? 'on' : '') + '" onclick="D.goPage(' + i + ')">' + (i+1) + '</button>';
+    }
+    p += '<button class="pb" onclick="D.goPage(' + (page+1) + ')" ' + (page >= tp-1 ? 'disabled' : '') + '>Next &#8250;</button>';
+    document.getElementById('pgBtns').innerHTML = p;
+  }
+
+  function render() { kpis(); seg(); res(); dom(); typ(); tbl(); }
+
+  // Init
+  fillSel('fSeg', 'Segment');
+  fillSel('fRes', 'Resource');
+  fillSel('fTyp', 'Ticket_Type');
+  render();
+
+  return {
+    go: function() { applyFilters(); render(); },
+    reset: function() {
+      document.getElementById('fSeg').value = '';
+      document.getElementById('fRes').value = '';
+      document.getElementById('fTyp').value = '';
+      filtered = raw.slice(); page = 0; render();
+    },
+    sort: function(col) {
+      if (sc === col) { sd = sd === 'asc' ? 'desc' : 'asc'; } else { sc = col; sd = 'asc'; }
+      filtered.sort(function(a, b) {
+        var av = a[col] || '', bv = b[col] || '', cmp = av < bv ? -1 : av > bv ? 1 : 0;
+        return sd === 'asc' ? cmp : -cmp;
+      });
+      page = 0; tbl();
+    },
+    goPage: function(p) {
+      var tp = Math.ceil(filtered.length / ps);
+      if (p < 0 || p >= tp) return;
+      page = p; tbl();
+      document.querySelector('.tbl-section').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  };
+})();
+</script>
+</body>
+</html>

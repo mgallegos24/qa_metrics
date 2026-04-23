@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Metrics — Q1 2026 Summary</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg: #f0f2f5; --card: #fff; --hdr: #0d1b2a; --hdr2: #1b2e44;
+            --text: #1a202c; --muted: #6b7280; --ondark: #fff;
+            --blue: #3b82f6; --green: #10b981; --amber: #f59e0b; --red: #ef4444; --purple: #8b5cf6;
+            --gap: 16px; --r: 10px;
+            --shadow: 0 1px 4px rgba(0,0,0,.08), 0 2px 12px rgba(0,0,0,.04);
+        }
+        * { margin:0; padding:0; box-sizing:border-box }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5 }
+        .wrap { max-width: 1400px; margin: 0 auto; padding: var(--gap) }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--hdr) 0%, var(--hdr2) 100%);
+            color: var(--ondark); padding: 24px 32px; border-radius: var(--r);
+            margin-bottom: var(--gap); box-shadow: 0 4px 20px rgba(0,0,0,.15);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+        }
+        .header-logo { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,.5); font-weight: 600; margin-bottom: 4px }
+        .header h1 { font-size: 24px; font-weight: 800; letter-spacing: -.5px }
+        .header-sub { font-size: 13px; color: rgba(255,255,255,.6); margin-top: 4px }
+        .q1-badge { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600 }
+
+        /* Quarter KPIs */
+        .q-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); margin-bottom: var(--gap) }
+        .q-kpi { background: var(--card); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow); border-top: 4px solid transparent }
+        .q-kpi:nth-child(1) { border-color: var(--blue) } .q-kpi:nth-child(2) { border-color: var(--green) } .q-kpi:nth-child(3) { border-color: var(--amber) } .q-kpi:nth-child(4) { border-color: var(--purple) }
+        .q-kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; font-weight: 600; margin-bottom: 6px }
+        .q-kpi-value { font-size: 36px; font-weight: 800; letter-spacing: -1px; line-height: 1 }
+        .q-kpi-sub { font-size: 12px; color: var(--muted); margin-top: 6px }
+
+        /* Month Cards */
+        .section-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: #e5e7eb }
+
+        .month-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-bottom: var(--gap) }
+
+        .month-card {
+            background: var(--card); border-radius: var(--r); box-shadow: var(--shadow);
+            overflow: hidden; text-decoration: none; color: inherit;
+            transition: transform .2s, box-shadow .2s; cursor: pointer; display: block;
+        }
+        .month-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,.12) }
+
+        .month-card-header {
+            padding: 20px 24px 16px; display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .mc-jan .month-card-header { background: linear-gradient(135deg, #1e40af, #3b82f6) }
+        .mc-feb .month-card-header { background: linear-gradient(135deg, #065f46, #10b981) }
+        .mc-mar .month-card-header { background: linear-gradient(135deg, #78350f, #f59e0b) }
+
+        .month-name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.5px }
+        .month-year { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 2px }
+        .month-arrow { width: 32px; height: 32px; background: rgba(255,255,255,.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; flex-shrink: 0 }
+
+        .month-card-body { padding: 20px 24px }
+
+        .mc-stat-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 16px }
+        .mc-stat { }
+        .mc-stat-val { font-size: 26px; font-weight: 800; letter-spacing: -1px; line-height: 1 }
+        .mc-stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px }
+        .mc-jan .mc-stat-val { color: #1d4ed8 }
+        .mc-feb .mc-stat-val { color: #065f46 }
+        .mc-mar .mc-stat-val { color: #b45309 }
+
+        .mc-divider { height: 1px; background: #f3f4f6; margin-bottom: 14px }
+
+        .mc-breakdown { display: flex; flex-direction: column; gap: 6px }
+        .mc-bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px }
+        .mc-bar-label { width: 100px; color: var(--muted); flex-shrink: 0; font-weight: 500 }
+        .mc-bar-track { flex: 1; height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden }
+        .mc-bar-fill { height: 100%; border-radius: 3px }
+        .mc-bar-count { width: 28px; text-align: right; font-weight: 600; color: var(--text) }
+
+        .mc-change { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f3f4f6 }
+        .change-up { color: var(--green) } .change-down { color: var(--red) } .change-na { color: var(--muted) }
+
+        .mc-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; margin-top: 4px; padding: 6px 14px; border-radius: 6px; background: #f8f9fa; border: 1px solid #e5e7eb; color: var(--text); transition: background .2s }
+        .month-card:hover .mc-cta { background: #e5e7eb }
+
+        /* Trend Charts */
+        .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: var(--gap); margin-bottom: var(--gap) }
+        .chart-box { background: var(--card); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow) }
+        .chart-box-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px }
+        .chart-box-title { font-size: 13px; font-weight: 700 }
+        .chart-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 3px 8px; border-radius: 20px; background: #eff6ff; color: var(--blue) }
+        .chart-box canvas { max-height: 260px }
+
+        /* Resource leaderboard */
+        .leaderboard { background: var(--card); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow); margin-bottom: var(--gap) }
+        .lb-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f3f4f6 }
+        .lb-row:last-child { border-bottom: none }
+        .lb-rank { width: 24px; height: 24px; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0 }
+        .lb-rank.gold { background: #fef3c7; color: #b45309 }
+        .lb-rank.silver { background: #f1f5f9; color: #475569 }
+        .lb-rank.bronze { background: #fdf4e8; color: #c2410c }
+        .lb-name { font-size: 13px; font-weight: 600; width: 70px; flex-shrink: 0 }
+        .lb-bars { display: flex; gap: 4px; flex: 1 }
+        .lb-seg { height: 8px; border-radius: 2px; transition: width .3s }
+        .lb-total { font-size: 13px; font-weight: 700; width: 36px; text-align: right; flex-shrink: 0 }
+        .lb-legend { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap }
+        .lb-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted) }
+        .lb-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0 }
+
+        .footer { text-align: center; font-size: 11px; color: var(--muted); padding: 16px 0 4px }
+
+        @media (max-width: 1100px) { .month-cards { grid-template-columns: 1fr } .charts-row { grid-template-columns: 1fr } .q-kpi-row { grid-template-columns: repeat(2, 1fr) } }
+        @media (max-width: 600px) { .q-kpi-row { grid-template-columns: repeat(2, 1fr) } }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <!-- Header -->
+    <header class="header">
+        <div>
+            <div class="header-logo">Centerfield · QA Team</div>
+            <h1>Q1 2026 — QA Metrics Summary</h1>
+            <div class="header-sub">January · February · March &nbsp;|&nbsp; Click a month card to drill into details</div>
+        </div>
+        <span class="q1-badge">Q1 2026</span>
+    </header>
+
+    <!-- Quarter-level KPIs -->
+    <section class="q-kpi-row">
+        <div class="q-kpi">
+            <div class="q-kpi-label">Q1 Total Tickets</div>
+            <div class="q-kpi-value">464</div>
+            <div class="q-kpi-sub">Across Jan + Feb + Mar</div>
+        </div>
+        <div class="q-kpi">
+            <div class="q-kpi-label">Unique Domains (Q1)</div>
+            <div class="q-kpi-value">68</div>
+            <div class="q-kpi-sub">Combined across all months</div>
+        </div>
+        <div class="q-kpi">
+            <div class="q-kpi-label">Busiest Month</div>
+            <div class="q-kpi-value">Feb</div>
+            <div class="q-kpi-sub">189 tickets (+53.7% vs Jan)</div>
+        </div>
+        <div class="q-kpi">
+            <div class="q-kpi-label">Top Ticket Type</div>
+            <div class="q-kpi-value">MOD</div>
+            <div class="q-kpi-sub">260 tickets — 56% of Q1</div>
+        </div>
+    </section>
+
+    <!-- Month Cards -->
+    <div class="section-title">Monthly Breakdown — Click to View Details</div>
+    <div class="month-cards">
+
+        <!-- JANUARY -->
+        <a class="month-card mc-jan" href="QA_January_2026.html">
+            <div class="month-card-header">
+                <div>
+                    <div class="month-name">January</div>
+                    <div class="month-year">2026</div>
+                </div>
+                <div class="month-arrow">→</div>
+            </div>
+            <div class="month-card-body">
+                <div class="mc-stat-row">
+                    <div class="mc-stat"><div class="mc-stat-val">123</div><div class="mc-stat-lbl">Total Tickets</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">37</div><div class="mc-stat-lbl">Unique Domains</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">7</div><div class="mc-stat-lbl">Resources</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">4</div><div class="mc-stat-lbl">Segments</div></div>
+                </div>
+                <div class="mc-divider"></div>
+                <div class="mc-breakdown">
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">Home Services</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:84.6%;background:#3b82f6"></div></div>
+                        <span class="mc-bar-count">104</span>
+                    </div>
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">Insurance</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:8.1%;background:#10b981"></div></div>
+                        <span class="mc-bar-count">10</span>
+                    </div>
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">B2B</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:4.9%;background:#f59e0b"></div></div>
+                        <span class="mc-bar-count">6</span>
+                    </div>
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">ECOM</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:2.4%;background:#8b5cf6"></div></div>
+                        <span class="mc-bar-count">3</span>
+                    </div>
+                </div>
+                <div class="mc-change change-na">— Baseline month</div>
+                <div style="margin-top:10px"><span class="mc-cta">View January Details →</span></div>
+            </div>
+        </a>
+
+        <!-- FEBRUARY -->
+        <a class="month-card mc-feb" href="QA_February_2026.html">
+            <div class="month-card-header">
+                <div>
+                    <div class="month-name">February</div>
+                    <div class="month-year">2026</div>
+                </div>
+                <div class="month-arrow">→</div>
+            </div>
+            <div class="month-card-body">
+                <div class="mc-stat-row">
+                    <div class="mc-stat"><div class="mc-stat-val">189</div><div class="mc-stat-lbl">Total Tickets</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">43</div><div class="mc-stat-lbl">Unique Domains</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">9</div><div class="mc-stat-lbl">Resources</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">3</div><div class="mc-stat-lbl">Segments</div></div>
+                </div>
+                <div class="mc-divider"></div>
+                <div class="mc-breakdown">
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">Home Services</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:60.3%;background:#3b82f6"></div></div>
+                        <span class="mc-bar-count">114</span>
+                    </div>
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">Insurance</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:21.2%;background:#10b981"></div></div>
+                        <span class="mc-bar-count">40</span>
+                    </div>
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">B2B</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:18.5%;background:#f59e0b"></div></div>
+                        <span class="mc-bar-count">35</span>
+                    </div>
+                </div>
+                <div class="mc-change change-up">↑ +66 tickets (+53.7% vs January)</div>
+                <div style="margin-top:10px"><span class="mc-cta">View February Details →</span></div>
+            </div>
+        </a>
+
+        <!-- MARCH -->
+        <a class="month-card mc-mar" href="QA_March_2026.html">
+            <div class="month-card-header">
+                <div>
+                    <div class="month-name">March</div>
+                    <div class="month-year">2026</div>
+                </div>
+                <div class="month-arrow">→</div>
+            </div>
+            <div class="month-card-body">
+                <div class="mc-stat-row">
+                    <div class="mc-stat"><div class="mc-stat-val">152</div><div class="mc-stat-lbl">Total Tickets</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">39</div><div class="mc-stat-lbl">Unique Domains</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">8</div><div class="mc-stat-lbl">Resources</div></div>
+                    <div class="mc-stat"><div class="mc-stat-val">3</div><div class="mc-stat-lbl">Segments</div></div>
+                </div>
+                <div class="mc-divider"></div>
+                <div class="mc-breakdown">
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">Home Services</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:73.0%;background:#3b82f6"></div></div>
+                        <span class="mc-bar-count">111</span>
+                    </div>
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">Insurance</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:13.8%;background:#10b981"></div></div>
+                        <span class="mc-bar-count">21</span>
+                    </div>
+                    <div class="mc-bar-row">
+                        <span class="mc-bar-label">B2B</span>
+                        <div class="mc-bar-track"><div class="mc-bar-fill" style="width:13.2%;background:#f59e0b"></div></div>
+                        <span class="mc-bar-count">20</span>
+                    </div>
+                </div>
+                <div class="mc-change change-down">↓ −37 tickets (−19.6% vs February)</div>
+                <div style="margin-top:10px"><span class="mc-cta">View March Details →</span></div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Trend Charts -->
+    <div class="charts-row">
+        <div class="chart-box">
+            <div class="chart-box-header">
+                <span class="chart-box-title">Monthly Ticket Volume Trend</span>
+                <span class="chart-badge">Q1 Trend</span>
+            </div>
+            <canvas id="trendChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <div class="chart-box-header">
+                <span class="chart-box-title">Segment Mix by Month</span>
+                <span class="chart-badge">Segments</span>
+            </div>
+            <canvas id="segChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Ticket Type Comparison -->
+    <div style="background:var(--card);border-radius:var(--r);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:var(--gap)">
+        <div class="chart-box-header">
+            <span class="chart-box-title">Ticket Type Comparison — Jan vs Feb vs Mar</span>
+            <span class="chart-badge">Types</span>
+        </div>
+        <canvas id="typeChart" style="max-height:240px"></canvas>
+    </div>
+
+    <!-- Resource Leaderboard -->
+    <div class="section-title">Q1 Resource Leaderboard</div>
+    <div class="leaderboard">
+        <div class="lb-legend">
+            <div class="lb-legend-item"><div class="lb-dot" style="background:#3b82f6"></div> January</div>
+            <div class="lb-legend-item"><div class="lb-dot" style="background:#10b981"></div> February</div>
+            <div class="lb-legend-item"><div class="lb-dot" style="background:#f59e0b"></div> March</div>
+        </div>
+        <div id="leaderboard"></div>
+    </div>
+
+    <footer class="footer">Source: QA Metrics 2026.xlsx &nbsp;·&nbsp; Q1 2026 &nbsp;·&nbsp; Centerfield QA Team</footer>
+</div>
+
+<script>
+// ─── Data ───
+const MONTHLY = {
+    January:  { tickets: 123, domains: 37, resources: 7,  segments: { 'Home Services': 104, 'Insurance': 10, 'B2B': 6, 'ECOM': 3 }, types: { MOD: 68, EXP: 32, LAUNCH: 6, 'MOD to EXP': 4, 'PROD BUG': 3, FINGERPRINT: 3, DEV: 2, BUG: 2, HOTFIX: 2, NF: 1 }, byResource: { Marco: 26, Monica: 25, Liz: 22, Roman: 21, Andy: 16, Elaine: 12, IPE: 1 } },
+    February: { tickets: 189, domains: 43, resources: 9,  segments: { 'Home Services': 114, 'Insurance': 40, 'B2B': 35 }, types: { MOD: 105, EXP: 29, NF: 18, LAUNCH: 7, DEV: 7, 'MOD to EXP': 6, HOTFIX: 5, 'PROD BUG': 4, LEGAL: 3, BUG: 2, OPT: 1, TD: 1 }, byResource: { Monica: 39, Elaine: 39, Andy: 37, Marco: 33, Roman: 21, Liz: 17, Ivan: 1, Mark: 1 } },
+    March:    { tickets: 152, domains: 39, resources: 8,  segments: { 'Home Services': 111, 'Insurance': 21, 'B2B': 20 }, types: { MOD: 87, EXP: 37, MISC: 10, 'PROD BUG': 8, LAUNCH: 3, 'MOD to EXP': 3, HOTFIX: 2, BUG: 1, NF: 1 }, byResource: { Marco: 39, Monica: 32, Andy: 32, Elaine: 20, Liz: 20, Roman: 7, Mark: 1, Ivan: 1 } }
+};
+const MONTHS = ['January', 'February', 'March'];
+const COLORS = { blue: '#3b82f6', green: '#10b981', amber: '#f59e0b', red: '#ef4444', purple: '#8b5cf6', cyan: '#06b6d4', orange: '#f97316' };
+
+// ─── Trend Chart ───
+(function() {
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: MONTHS,
+            datasets: [
+                { label: 'Home Services', data: [104, 114, 111], backgroundColor: '#3b82f6cc', borderRadius: 4, stack: 'seg' },
+                { label: 'Insurance',     data: [10,  40,  21],  backgroundColor: '#10b981cc', borderRadius: 4, stack: 'seg' },
+                { label: 'B2B',           data: [6,   35,  20],  backgroundColor: '#f59e0bcc', borderRadius: 4, stack: 'seg' },
+                { label: 'Other',         data: [3,   0,   0],   backgroundColor: '#8b5cf6cc', borderRadius: 4, stack: 'seg' },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14, font: { size: 11 } } },
+                tooltip: {
+                    mode: 'index',
+                    callbacks: {
+                        footer: items => 'Total: ' + items.reduce((s, i) => s + i.parsed.y, 0)
+                    }
+                }
+            },
+            scales: {
+                x: { stacked: true, grid: { display: false } },
+                y: { stacked: true, beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { stepSize: 25 } }
+            }
+        }
+    });
+})();
+
+// ─── Segment Mix Doughnut (per month tabs) ───
+(function() {
+    const ctx = document.getElementById('segChart').getContext('2d');
+    // Show Q1 combined
+    const combined = { 'Home Services': 104+114+111, 'Insurance': 10+40+21, 'B2B': 6+35+20, 'ECOM': 3 };
+    const labels = Object.keys(combined), data = Object.values(combined);
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{ data, backgroundColor: ['#3b82f6cc','#10b981cc','#f59e0bcc','#8b5cf6cc'], borderColor: '#fff', borderWidth: 3, hoverOffset: 8 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '60%',
+            plugins: {
+                legend: { position: 'right', labels: { usePointStyle: true, padding: 14, font: { size: 11 } } },
+                tooltip: { callbacks: { label: c => { const t = c.dataset.data.reduce((a,b)=>a+b,0); return ' '+c.label+': '+c.parsed+' ('+(((c.parsed/t)*100).toFixed(1))+'%)' } } }
+            }
+        }
+    });
+})();
+
+// ─── Type Comparison ───
+(function() {
+    const topTypes = ['MOD','EXP','LAUNCH','MISC','MOD to EXP','PROD BUG','DEV','NF','HOTFIX','BUG'];
+    const ctx = document.getElementById('typeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: topTypes,
+            datasets: [
+                { label: 'January',  data: topTypes.map(t => MONTHLY.January.types[t]||0),  backgroundColor: '#3b82f6cc', borderRadius: 3, borderSkipped: false },
+                { label: 'February', data: topTypes.map(t => MONTHLY.February.types[t]||0), backgroundColor: '#10b981cc', borderRadius: 3, borderSkipped: false },
+                { label: 'March',    data: topTypes.map(t => MONTHLY.March.types[t]||0),    backgroundColor: '#f59e0bcc', borderRadius: 3, borderSkipped: false },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14, font: { size: 11 } } }, tooltip: { mode: 'index' } },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { stepSize: 10 } }
+            }
+        }
+    });
+})();
+
+// ─── Resource Leaderboard ───
+(function() {
+    // Aggregate all resources Q1
+    const totals = {};
+    const byMonth = { January: {}, February: {}, March: {} };
+    MONTHS.forEach(m => {
+        Object.entries(MONTHLY[m].byResource).forEach(([r, n]) => {
+            totals[r] = (totals[r]||0) + n;
+            byMonth[m][r] = n;
+        });
+    });
+    const sorted = Object.entries(totals).sort((a,b) => b[1]-a[1]);
+    const max = sorted[0][1];
+    const ranks = ['gold','silver','bronze'];
+    const colors = ['#3b82f6','#10b981','#f59e0b'];
+
+    let html = '';
+    sorted.forEach(([name, total], i) => {
+        const rc = i < 3 ? ranks[i] : '';
+        const monthBars = MONTHS.map((m, mi) => {
+            const val = byMonth[m][name] || 0;
+            const w = Math.round((val / max) * 100);
+            return '<div class="lb-seg" style="width:'+w+'%;background:'+colors[mi]+';min-width:'+(val>0?'4px':'0')+'"></div>';
+        }).join('');
+        html += '<div class="lb-row">';
+        html += '<div class="lb-rank '+rc+'">'+(i+1)+'</div>';
+        html += '<div class="lb-name">'+name+'</div>';
+        html += '<div class="lb-bars">'+monthBars+'</div>';
+        html += '<div class="lb-total">'+total+'</div>';
+        html += '</div>';
+    });
+    document.getElementById('leaderboard').innerHTML = html;
+})();
+</script>
+</body>
+</html>
