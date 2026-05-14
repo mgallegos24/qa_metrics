@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QA Weekly Snapshot — 2026-05-11 to 2026-05-15</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0f1117; --card:#1a1d27; --border:#2a2d3a; --text:#e2e8f0; --sub:#8892a4;
+  --blue:#4f8ef7; --green:#34d399; --orange:#fb923c; --purple:#a78bfa; --red:#f87171;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',sans-serif;
+       font-size:14px; padding:24px; }
+h1   { font-size:1.5rem; margin-bottom:4px; }
+.sub { color:var(--sub); font-size:.875rem; margin-bottom:24px; }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.kpi  { background:var(--card); border:1px solid var(--border);
+        border-radius:12px; padding:20px; }
+.kpi-label { color:var(--sub); font-size:.75rem; text-transform:uppercase;
+             letter-spacing:.05em; }
+.kpi-value { font-size:2rem; font-weight:700; margin-top:4px; }
+.charts    { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+.chart-box { background:var(--card); border:1px solid var(--border);
+             border-radius:12px; padding:20px; }
+.chart-box h3  { font-size:.9rem; color:var(--sub); margin-bottom:16px; }
+.chart-box.wide{ grid-column:1/-1; }
+.filters { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.filters select, .filters input {
+  background:var(--card); border:1px solid var(--border); color:var(--text);
+  border-radius:8px; padding:6px 12px; font-size:.875rem;
+}
+.filters button {
+  background:var(--card); border:1px solid var(--border); color:var(--sub);
+  border-radius:8px; padding:6px 14px; font-size:.875rem; cursor:pointer;
+}
+.filters button:hover { color:var(--text); }
+table  { width:100%; border-collapse:collapse; }
+th { background:var(--card); color:var(--sub); font-size:.75rem;
+     text-transform:uppercase; letter-spacing:.05em; padding:10px 12px;
+     text-align:left; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--text); }
+td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:.875rem; }
+tr:hover td { background:rgba(255,255,255,.03); }
+.badge { display:inline-block; padding:2px 8px; border-radius:999px;
+         font-size:.75rem; font-weight:600; }
+.badge-done { background:rgba(52,211,153,.15); color:var(--green); }
+.badge-prod { background:rgba(79,142,247,.15);  color:var(--blue);  }
+.pager { display:flex; gap:8px; margin-top:16px; align-items:center;
+         justify-content:flex-end; }
+.pager button { background:var(--card); border:1px solid var(--border);
+  color:var(--text); border-radius:6px; padding:4px 12px;
+  cursor:pointer; font-size:.875rem; }
+.pager button:disabled { opacity:.4; cursor:default; }
+.pager span { color:var(--sub); font-size:.875rem; }
+.tbl-wrap { background:var(--card); border:1px solid var(--border);
+            border-radius:12px; padding:20px; }
+a.back { display:inline-flex; align-items:center; gap:6px; color:var(--sub);
+         text-decoration:none; font-size:.875rem; margin-bottom:20px; }
+a.back:hover { color:var(--text); }
+</style>
+</head>
+<body>
+
+<h1>QA Weekly Snapshot — 2026-05-11 to 2026-05-15</h1>
+<p class="sub">12 tickets  |  Mon 2026-05-11 – Fri 2026-05-15</p>
+
+<div class="kpis">
+  <div class="kpi"><div class="kpi-label">Total Tickets</div><div class="kpi-value" id="kTotal">—</div></div>
+  <div class="kpi"><div class="kpi-label">Unique Domains</div><div class="kpi-value" id="kDom">—</div></div>
+  <div class="kpi"><div class="kpi-label">QA Assignees</div><div class="kpi-value" id="kQA">—</div></div>
+  <div class="kpi"><div class="kpi-label">Segments</div><div class="kpi-value" id="kSeg">—</div></div>
+</div>
+
+<div class="charts">
+  <div class="chart-box"><h3>By Segment</h3><canvas id="cSeg"></canvas></div>
+  <div class="chart-box"><h3>By QA Assignee</h3><canvas id="cRes"></canvas></div>
+  <div class="chart-box wide"><h3>Top 10 Domains</h3><canvas id="cDom" height="120"></canvas></div>
+  <div class="chart-box"><h3>Ticket Type</h3><canvas id="cTyp"></canvas></div>
+</div>
+
+<div class="tbl-wrap">
+  <div class="filters">
+    <select id="fSeg" onchange="D.go()"><option value="">All Segments</option></select>
+    <select id="fTyp" onchange="D.go()"><option value="">All Types</option></select>
+    <select id="fQA"  onchange="D.go()"><option value="">All QA Assignees</option></select>
+    <input  id="fSrc" type="text" placeholder="Search domain / summary&#8230;" oninput="D.go()">
+    <button onclick="D.reset()">Reset</button>
+  </div>
+  <table>
+    <thead><tr id="tHead"></tr></thead>
+    <tbody id="tBody"></tbody>
+  </table>
+  <div class="pager">
+    <span id="pInfo"></span>
+    <button id="pPrev" onclick="D.goPage(-1)">&#8249; Prev</button>
+    <button id="pNext" onclick="D.goPage(1)">Next &#8250;</button>
+  </div>
+</div>
+
+<script>
+
+var COLORS = ["#4f8ef7","#34d399","#fb923c","#a78bfa","#f87171",
+              "#fbbf24","#22d3ee","#e879f9","#86efac","#fca5a5"];
+
+var D = (function () {
+  var raw      = [{"key": "HOME-7670", "summary": "[MOD] Frontier P2: Home - Remove Image from Hero - Live at ASAP", "status": "Done", "segment": "Home Services", "domain": "Frontier", "type": "MOD", "qa": "Monica", "resolved": "2026-05-12"}, {"key": "HOME-7649", "summary": "[MOD to EXP] ADT NB: Homepage - Lead Flow Question Swap", "status": "Done", "segment": "Home Services", "domain": "ADT P1", "type": "MOD", "qa": "Liz", "resolved": "2026-05-11"}, {"key": "HOME-7578", "summary": "[MOD] ATT P2: Air - Internet Air Plan Card Audit", "status": "Done", "segment": "Home Services", "domain": "AT&T P2", "type": "MOD", "qa": "Marco", "resolved": "2026-05-13"}, {"key": "HOME-7538", "summary": "[MOD] DTV NB: Home - Premiums Offer Disclaimer Updates - Live at 5/18 9pm PST", "status": "Done", "segment": "Home Services", "domain": "DTV Online", "type": "MOD", "qa": "Liz", "resolved": "2026-05-13"}, {"key": "HOME-7450", "summary": "[MOD] T-Mobile - Internet - Placement Labels", "status": "Done", "segment": "Home Services", "domain": "T-Mobile", "type": "MOD", "qa": "Liz", "resolved": "2026-05-11"}, {"key": "HOME-7070", "summary": "[EXP] Optimum P1 - Internet - SMS Entry Flow - 2way", "status": "Done", "segment": "Home Services", "domain": "Optimum P1", "type": "EXP", "qa": "Marco", "resolved": "2026-05-13"}, {"key": "HOME-7067", "summary": "[EXP] Optimum P1 - Moving - Highlight Offer - 3way", "status": "Pushed to Prod", "segment": "Home Services", "domain": "Optimum P1", "type": "EXP", "qa": "Marco", "resolved": "2026-05-13"}, {"key": "HOME-7018", "summary": "[LAUNCH] ADT: June Direct Mail LPs - by 5/13", "status": "Done", "segment": "Home Services", "domain": "ADT P1", "type": "LAUNCH", "qa": "Liz", "resolved": "2026-05-13"}, {"key": "HOME-6882", "summary": "[MOD] DTV NB: Home, Sports - Price Increase RSN Fees - Live at 6/24 9pm PST", "status": "Done", "segment": "Home Services", "domain": "DTV Online", "type": "MOD", "qa": "Liz", "resolved": "2026-05-13"}, {"key": "HOME-6310", "summary": "[EXP] COX P2: Ecomm CTA LP Plan Card", "status": "Pushed to Prod", "segment": "Home Services", "domain": "COX P2", "type": "EXP", "qa": "Monica", "resolved": "2026-05-13"}, {"key": "B2B-2474", "summary": "[MOD] Optimum P1 - Add a loading screen after Step 2 between Form, CTA and technical improvements", "status": "Done", "segment": "B2B", "domain": "Optimum.com/cf/Business", "type": "MOD", "qa": "Marco", "resolved": "2026-05-13"}, {"key": "INSU-1168", "summary": "[New Feature] AIC SEM - Top 5 (API) - New Version (55-64)", "status": "Pushed to Prod", "segment": "Insurance", "domain": "AIC", "type": "NF", "qa": "Elaine", "resolved": "2026-05-13"}];
+  var filtered = raw.slice();
+  var page = 0, ps = 25, sc = null, sd = "asc";
+  var charts   = {};
+
+  function val(v)    { return v == null ? "—" : v; }
+  function counts(k) {
+    var m = {};
+    filtered.forEach(function (r) {
+      var v = val(r[k]); m[v] = (m[v] || 0) + 1;
+    });
+    return m;
+  }
+  function top10(k) {
+    var arr = Object.keys(counts(k)).map(function (x) {
+      return { k: x, v: counts(k)[x] };
+    });
+    arr.sort(function (a, b) { return b.v - a.v; });
+    return arr.slice(0, 10);
+  }
+
+  function fillSel(id, key) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    Array.from(new Set(raw.map(function (r) { return r[key]; })))
+      .sort()
+      .forEach(function (v) {
+        var o = document.createElement("option");
+        o.value = v; o.textContent = v;
+        sel.appendChild(o);
+      });
+  }
+
+  function applyFilters() {
+    function gv(id) {
+      var el = document.getElementById(id);
+      return el ? el.value : "";
+    }
+    var seg  = gv("fSeg"), typ = gv("fTyp"),
+        qa   = gv("fQA"),  src = gv("fSrc").toLowerCase();
+    filtered = raw.filter(function (r) {
+      if (seg && r.segment !== seg) return false;
+      if (typ && r.type    !== typ) return false;
+      if (qa  && r.qa      !== qa)  return false;
+      if (src && !r.domain.toLowerCase().includes(src) &&
+                 !r.summary.toLowerCase().includes(src)) return false;
+      return true;
+    });
+    if (sc) {
+      filtered.sort(function (a, b) {
+        var x = val(a[sc]), y = val(b[sc]);
+        return sd === "asc" ? x.localeCompare(y) : y.localeCompare(x);
+      });
+    }
+    page = 0;
+    render();
+  }
+
+  function mkChart(id, cfg) {
+    if (charts[id]) { charts[id].destroy(); }
+    var ctx = document.getElementById(id);
+    if (ctx) charts[id] = new Chart(ctx, cfg);
+  }
+
+  function drawCharts() {
+    var segC = counts("segment");
+    mkChart("cSeg", {
+      type: "doughnut",
+      data: {
+        labels: Object.keys(segC),
+        datasets: [{ data: Object.values(segC),
+          backgroundColor: COLORS, borderWidth: 0 }]
+      },
+      options: {
+        plugins: { legend: { position: "right",
+          labels: { color: "#e2e8f0", boxWidth: 12 } } },
+        cutout: "65%"
+      }
+    });
+
+    var qaArr = Object.entries(counts("qa"))
+      .map(function (e) { return { k: e[0], v: e[1] }; })
+      .sort(function (a, b) { return b.v - a.v; });
+    mkChart("cRes", {
+      type: "bar",
+      data: {
+        labels: qaArr.map(function (x) { return x.k; }),
+        datasets: [{ data: qaArr.map(function (x) { return x.v; }),
+          backgroundColor: "#4f8ef7", borderRadius: 4 }]
+      },
+      options: {
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#8892a4" }, grid: { color: "#2a2d3a" } },
+          y: { ticks: { color: "#e2e8f0" }, grid: { display: false } }
+        }
+      }
+    });
+
+    var domArr = top10("domain");
+    mkChart("cDom", {
+      type: "bar",
+      data: {
+        labels: domArr.map(function (x) { return x.k; }),
+        datasets: [{ data: domArr.map(function (x) { return x.v; }),
+          backgroundColor: "#34d399", borderRadius: 4 }]
+      },
+      options: {
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#8892a4" }, grid: { color: "#2a2d3a" } },
+          y: { ticks: { color: "#e2e8f0" }, grid: { display: false } }
+        }
+      }
+    });
+
+    var typC = counts("type");
+    mkChart("cTyp", {
+      type: "bar",
+      data: {
+        labels: Object.keys(typC),
+        datasets: [{ data: Object.values(typC),
+          backgroundColor: COLORS, borderRadius: 4 }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#8892a4" }, grid: { color: "#2a2d3a" } },
+          y: { ticks: { color: "#8892a4" }, grid: { color: "#2a2d3a" } }
+        }
+      }
+    });
+  }
+
+  function kpis() {
+    var doms = new Set(filtered.map(function (r) { return r.domain;  })).size;
+    var qas  = new Set(filtered.map(function (r) { return r.qa;      })).size;
+    var segs = new Set(filtered.map(function (r) { return r.segment; })).size;
+    document.getElementById("kTotal").textContent = filtered.length;
+    document.getElementById("kDom").textContent   = doms;
+    document.getElementById("kQA").textContent    = qas;
+    document.getElementById("kSeg").textContent   = segs;
+  }
+
+  function badge(status) {
+    if (status === "Pushed to Prod")
+      return '<span class="badge badge-prod">Pushed to Prod</span>';
+    return '<span class="badge badge-done">Done</span>';
+  }
+
+  function tbl() {
+    var start = page * ps;
+    var rows  = filtered.slice(start, start + ps);
+    var cols  = [
+      { k: "key",      l: "Key"         },
+      { k: "domain",   l: "Domain"      },
+      { k: "segment",  l: "Segment"     },
+      { k: "type",     l: "Type"        },
+      { k: "qa",       l: "QA Assignee" },
+      { k: "status",   l: "Status"      },
+      { k: "resolved", l: "Resolved"    },
+    ];
+    document.getElementById("tHead").innerHTML = cols.map(function (c) {
+      var arrow = sc === c.k ? (sd === "asc" ? " ▲" : " ▼") : "";
+      return "<th onclick=\"D.sort('" + c.k + "')\">" + c.l + arrow + "</th>";
+    }).join("");
+
+    document.getElementById("tBody").innerHTML = rows.map(function (r) {
+      return "<tr>"
+        + "<td>" + r.key      + "</td>"
+        + "<td>" + r.domain   + "</td>"
+        + "<td>" + r.segment  + "</td>"
+        + "<td>" + r.type     + "</td>"
+        + "<td>" + r.qa       + "</td>"
+        + "<td>" + badge(r.status) + "</td>"
+        + "<td>" + r.resolved + "</td>"
+        + "</tr>";
+    }).join("");
+
+    var total = filtered.length;
+    var pages = Math.ceil(total / ps);
+    var from  = total === 0 ? 0 : start + 1;
+    var to    = Math.min(start + ps, total);
+    document.getElementById("pInfo").textContent = from + "–" + to + " of " + total;
+    document.getElementById("pPrev").disabled = page === 0;
+    document.getElementById("pNext").disabled = page >= pages - 1;
+  }
+
+  function render() {
+    kpis();
+    try { drawCharts(); } catch (e) { console.warn("Charts unavailable:", e); }
+    tbl();
+  }
+
+  return {
+    go:     function ()    { applyFilters(); },
+    reset:  function ()    {
+      ["fSeg","fTyp","fQA","fSrc"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      applyFilters();
+    },
+    sort:   function (col) {
+      sd = (sc === col && sd === "asc") ? "desc" : "asc";
+      sc = col;
+      applyFilters();
+    },
+    goPage: function (dir) { page += dir; tbl(); },
+    init:   function ()    {
+      fillSel("fSeg", "segment");
+      fillSel("fTyp", "type");
+      fillSel("fQA",  "qa");
+      render();
+    },
+  };
+})();
+
+window.addEventListener("load", function () { D.init(); });
+
+</script>
+</body>
+</html>
